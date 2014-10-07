@@ -8,7 +8,7 @@ project code is located at https://github.com/timothypage/project-timer
 
 TODO:
 
- - this will keep running in the tab is left open and you put the computer to sleep.  Maybe ignore Datetime differences of more than 5 minutes?
+ - this will keep running in the tab if it is left open and you put the computer to sleep.  Maybe ignore Datetime differences of more than 5 minutes?
 
  - Allow updating of time through the web interface, right now you'll have to use the javascript console:
 	
