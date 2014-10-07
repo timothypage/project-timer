@@ -27,12 +27,19 @@
     </div>
   </div>
 
+  <script type="text/html" id="timer-time-template">
+    <h1><%= hours %>:<%= minutes %>:<%= seconds %></h1>
+    <p><%= fraction %></p>
+  </script>
+
   <script type="text/html" id="timer-template">
   <hr>
   <div class="row">
       <div class="col-md-2 col-md-offset-2">
-        <h1><%= hours %>:<%= minutes %>:<%= seconds %></h1>
-        <p><%= fraction %></p>
+        <div class="timer-time">
+          <h1>00:00:00</h1>
+          <p>0.00</p>
+        </div>
       </div>
 
       <div class="col-md-2 <%= running_class %> timer-toggle" style="cursor: pointer;">
@@ -61,138 +68,6 @@
   <script src="js/underscore.js"></script>
   <script src="js/backbone.js"></script>
   <script src="js/backbone.localStorage.js"></script>
-  <script>
-  // $(document).ready(function() {
-  function incrementModelSeconds(model_id) {
-    var model = Timers.get(model_id);
-    model.save({
-      seconds: model.get("seconds") + 1
-    });
-  }
-
-  function pad(n, width, z) {
-    z = z || '0';
-    n = n + '';
-    return n.length >= width ? n : new Array(width - n.length + 1).join(z) + n;
-  }
-
-  var Timer = Backbone.Model.extend({
-    defaults: function() {
-      return {
-        project: "",
-        notes: "",
-        seconds: 0,
-        running: false
-      }
-    }
-  });
-
-  var TimerList = Backbone.Collection.extend({
-    model: Timer,
-    localStorage: new Backbone.LocalStorage("timer-backbone")
-  });
-
-  var Timers = new TimerList;
-
-  var TimerView = Backbone.View.extend({
-    tagName: "div",
-
-    template: _.template($('#timer-template').html()),
-
-    events: {
-      "click .destroy": "clear",
-      "click .start-timer": "start",
-      "click .stop-timer": "stop",
-      "blur .edit": "saveFields"
-    },
-
-    initialize: function() {
-      this.listenTo(this.model, 'change', this.render);
-      this.listenTo(this.model, 'destroy', this.remove);
-    },
-
-    render: function() {
-      attrs = this.model.toJSON();
-      attrs['hours'] = pad( Math.floor( this.model.get("seconds") / 3600 ), 2 );
-      attrs['minutes'] = pad( ( Math.floor(this.model.get("seconds") / 60 ) % 60 ) , 2 );
-      attrs['seconds'] = pad( ( this.model.get("seconds") % 60 ), 2);
-      attrs['fraction'] = (this.model.get("seconds") / 3600 ).toFixed(2);
-      attrs['running'] = ( this.model.get("running") ? 'Stop' : 'Start');
-      attrs['running_class'] = ( this.model.get("running") ? 'stop-timer' : 'start-timer' );
-
-      this.$el.html( this.template( attrs ) );
-
-      return this;
-    },
-
-    clear: function() {
-      this.model.destroy();
-    },
-
-    start: function() {
-      var interval_id = setInterval(incrementModelSeconds, 1000, this.model.id);
-      this.model.save({
-        interval_id: interval_id,
-        running: true
-      });
-
-    },
-
-    stop: function() {
-      clearInterval(this.model.get("interval_id"));
-      this.model.save({
-        running: false
-      });
-    },
-
-    saveFields: function() {
-      this.model.save({
-        project: this.$('input[name="project_title"]').val(),     
-        notes: this.$('textarea[name="project_notes"]').val() 
-      });
-    }
-  });
-
-  var AppView = Backbone.View.extend({
-    el: $("#timerapp"),
-
-    events: {
-      "click #one-more-timer": "createTimer",
-      "click #clear-all-timers": "clearAllTimers"
-    },
-
-    initialize: function() {
-      this.listenTo(Timers, 'add', this.addOne);
-      this.listenTo(Timers, 'reset', this.render);
-      this.listenTo(Timers, 'all', this.render);
-
-      Timers.fetch();
-    },
-
-    render: function() {
-      $('#timer-list').html('');
-      Timers.each(this.addOne, this);
-    },
-
-    createTimer: function(e) {
-      Timers.create();
-    },
-
-    addOne: function(timer) {
-      var view = new TimerView({model: timer});
-      this.$("#timer-list").append(view.render().el);
-    },
-
-    clearAllTimers: function() {
-      Timers.reset();
-      window.localStorage.clear();
-      return false;
-    }
-  });
-
-  var App = new AppView;
-
-  // });
-  </script>
+  <script src="js/app.js"></script>
 </body>
 </html>
